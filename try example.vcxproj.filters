@@ -15,54 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ColorCloudPoint.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="k4a_viewer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="k4a_viewer2.cpp">
+    <ClCompile Include="src\StaticImageProperties.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="opencv.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticImageProperties.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="stry.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="k4a_viewer3.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="k4a_viewer4.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="k4a_viewer5.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="try.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="k4a_viewer6.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="k4a_viewer7.cpp">
+    <ClCompile Include="src\stry.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DepthPixelColorizer.h">
+    <ClInclude Include="inc\DepthPixelColorizer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="k4a_grabber.h">
+    <ClInclude Include="inc\Pixel.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="StaticImageProperties.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Pixel.h">
+    <ClInclude Include="inc\StaticImageProperties.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

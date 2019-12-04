@@ -23,7 +23,7 @@
     <ProjectGuid>{C8E73CC9-06D4-4157-B97E-E21074168784}</ProjectGuid>
     <RootNamespace>tryexample</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>try_example</ProjectName>
+    <ProjectName>kinect-DK-viewer2</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,7 +72,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\Azure Kinect DK\Azure Kinect DK Body Tracker\sdk\include;D:\Azure Kinect DK\Azure Kinect DK\sdk\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Azure Kinect DK\xiongmao4hao\kinect-DK-viewer2\inc;D:\Azure Kinect DK\Azure Kinect DK Body Tracker\sdk\include;D:\Azure Kinect DK\Azure Kinect DK\sdk\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Azure Kinect DK\Azure Kinect DK\sdk\windows-desktop\amd64\release\lib;D:\Azure Kinect DK\Azure Kinect DK Body Tracker\sdk\windows-desktop\amd64\release\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -130,24 +130,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ColorCloudPoint.cpp" />
     <ClCompile Include="k4a_viewer.cpp" />
-    <ClCompile Include="k4a_viewer2.cpp" />
-    <ClCompile Include="k4a_viewer3.cpp" />
-    <ClCompile Include="k4a_viewer5.cpp" />
-    <ClCompile Include="k4a_viewer6.cpp" />
-    <ClCompile Include="k4a_viewer7.cpp" />
-    <ClCompile Include="opencv.cpp" />
-    <ClCompile Include="StaticImageProperties.cpp" />
-    <ClCompile Include="stry.cpp" />
-    <ClCompile Include="k4a_viewer4.cpp" />
-    <ClCompile Include="try.cpp" />
+    <ClCompile Include="src\StaticImageProperties.cpp" />
+    <ClCompile Include="src\stry.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DepthPixelColorizer.h" />
-    <ClInclude Include="k4a_grabber.h" />
-    <ClInclude Include="Pixel.h" />
-    <ClInclude Include="StaticImageProperties.h" />
+    <ClInclude Include="inc\DepthPixelColorizer.h" />
+    <ClInclude Include="inc\Pixel.h" />
+    <ClInclude Include="inc\StaticImageProperties.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
