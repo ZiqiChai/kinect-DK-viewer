@@ -72,7 +72,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\github\xiongmao4hao\kinect-DK-viewer\inc;D:\Azure Kinect DK\Azure Kinect DK Body Tracker\sdk\include;D:\Azure Kinect DK\Azure Kinect DK\sdk\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Azure Kinect DK\xiongmao4hao\kinect-DK-viewer2\inc;D:\Azure Kinect DK\Azure Kinect DK Body Tracker\sdk\include;D:\Azure Kinect DK\Azure Kinect DK\sdk\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Azure Kinect DK\Azure Kinect DK\sdk\windows-desktop\amd64\release\lib;D:\Azure Kinect DK\Azure Kinect DK Body Tracker\sdk\windows-desktop\amd64\release\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
