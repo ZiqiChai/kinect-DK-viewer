@@ -14,6 +14,9 @@
 #include "pixel.h"
 #include "depthpixelcolorizer.h"
 #include "staticimageproperties.h"
+#include <k4abt.h>
+#include <k4abttypes.h>
+
 
 
 using namespace cv;
@@ -32,10 +35,173 @@ thread* tids;
 thread* tids_s;
 k4a_device_t* dev;
 k4a_record_t* record = NULL;
+FILE* fp = NULL;
+k4a_calibration_t* sensor_calibration;
 k4a_device_configuration_t* config;
 mutex Flag1to1, Flagr1to1;
 int flag1to1 = 0, flagr1to1 = 0;
 //bool esc = false;
+
+int joints(int i)
+{
+	//帧计数
+	int frame_count0 = 0;
+
+	//内部时钟
+	uint64_t timestamp0;
+
+	////showimg();
+	////Get the configurations of the record
+	//k4a_record_configuration_t deviceConfig0;
+	////Open the record and do verification
+	//const char* record_path0 = files.c_str();
+	//k4a_playback_t  playback0;
+	//VERIFY(k4a_playback_open(record_path0, &playback0), "Open record0 mvk failed!");
+	//VERIFY(k4a_playback_get_record_configuration(playback0, &deviceConfig0), "Get record0 info failed!");
+	//get_record_config(deviceConfig0);
+	////Calibrate the sensor
+	//k4a_calibration_t playback_calibration0;
+	//VERIFY(k4a_playback_get_calibration(playback0, &playback_calibration0),
+	//	"Get depth camera0 calibration failed!");
+
+	//Create a tracker
+	k4abt_tracker_t tracker0 = NULL;
+	k4abt_tracker_configuration_t tracker_config0 = K4ABT_TRACKER_CONFIG_DEFAULT;
+	VERIFY(k4abt_tracker_create(&sensor_calibration[i], tracker_config0, &tracker0), "Body tracker0 initialization failed!");
+
+	//FILE* fp0;
+	//int last = files.find_last_of(".");   //从尾开始寻找字符'.'的位置
+	//files.replace(last, 4, ".txt");   //从位置pos开始，之后的4个字符替换为txt
+	//fp0 = fopen(files.c_str(), "w");
+	while (1)
+	{
+		// Capture a depth frame
+		k4a_capture_t playback_capture0;
+		k4a_stream_result_t get_capture_result0 = k4a_playback_get_next_capture(playback0, &playback_capture0);
+
+
+
+		if (get_capture_result0 == K4A_WAIT_RESULT_SUCCEEDED)
+		{
+			//printf("%d\n", frame_count0);
+			//Add the new captured frame to the input queue
+			k4a_wait_result_t queue_capture_result0 = k4abt_tracker_enqueue_capture(tracker0, playback_capture0, K4A_WAIT_INFINITE);//异步提取骨骼信息
+
+			///* get depth image from record*/
+			//k4a_image_t get_depth_img0 = k4a_capture_get_depth_image(playback_capture0);
+			//k4a_image_release(get_depth_img0);
+			k4a_capture_release(playback_capture0);
+
+			if (queue_capture_result0 == K4A_WAIT_RESULT_TIMEOUT)// && queue_capture_result1 == K4A_WAIT_RESULT_TIMEOUT)
+			{
+				// It should never hit timeout when K4A_WAIT_INFINITE is set.
+				printf("Error! Add capture to tracker process queue timeout!\n");
+				break;
+			}
+			else if (queue_capture_result0 == K4A_WAIT_RESULT_FAILED)// && queue_capture_result1 == K4A_WAIT_RESULT_FAILED)
+			{
+				printf("Error! Add capture to tracker process queue failed!\n");
+				break;
+			}
+
+			//Get access to the tracker data
+			k4abt_frame_t body_frame0 = NULL;
+			k4a_wait_result_t pop_frame_result0 = k4abt_tracker_pop_result(tracker0, &body_frame0, K4A_WAIT_INFINITE);
+
+			if (pop_frame_result0 == K4A_WAIT_RESULT_SUCCEEDED)
+			{
+				//Get the number of detecied human bodies
+				//size_t num_bodies = k4abt_frame_get_num_bodies(body_frame0);
+				//Get access to every idex of human bodies
+				k4abt_skeleton_t skeleton0;
+				k4a_result_t get_body_skeleton0 = k4abt_frame_get_body_skeleton(body_frame0, 0, &skeleton0);
+
+				if (get_body_skeleton0 == K4A_RESULT_SUCCEEDED)
+				{
+					frame_count0++;
+
+					if (frame_count0 >= 1)
+					{
+						////***************求角度*******************
+						//float* joints_Angel;
+						//joints_Angel = JointsPositionToAngel(skeleton0);
+						//for (int i = 0; i < 12; i++)
+						//{
+						//	printf("%f", joints_Angel[i]);
+						//	printf("   ");
+						//}
+						//****************************************
+						timestamp0 = k4abt_frame_get_device_timestamp_usec(body_frame0);
+						fprintf(fp0, "%llu,", timestamp0);
+						for (int i = 0; i < 32; i++) {
+
+							// write the raw cordinates into the txt file
+
+							tf_source_depth.xyz.x = skeleton0.joints[i].position.xyz.x;
+							tf_source_depth.xyz.y = skeleton0.joints[i].position.xyz.y;
+							tf_source_depth.xyz.z = skeleton0.joints[i].position.xyz.z;
+
+							/* Doing cordinate translation there */
+							k4a_result_t tf_result = k4a_calibration_3d_to_3d(&playback_calibration0, &tf_source_depth, K4A_CALIBRATION_TYPE_DEPTH, K4A_CALIBRATION_TYPE_COLOR, &tf_target_color);
+							// write the transfered cordinates into the txt file
+							if (tf_result == K4A_RESULT_SUCCEEDED)
+							{
+								fprintf(fp0, "%f,%f,%f,", tf_target_color.xyz.x, tf_target_color.xyz.y, tf_target_color.xyz.z);
+							}
+							else {
+								printf("Cordinates transfered failed!\n");
+							}
+
+							//fprintf(fp0, "%f,%f,%f,", skeleton0.joints[i].position.xyz.x, skeleton0.joints[i].position.xyz.y, skeleton0.joints[i].position.xyz.z);
+						}
+						fprintf(fp0, "\n");
+					}
+				}
+				else if (get_body_skeleton0 == K4A_RESULT_FAILED)
+				{
+					printf("Get body skeleton failed!!\n");
+				}
+				uint32_t id = k4abt_frame_get_body_id(body_frame0, 1);
+				//printf("Body ID is %u\n", id);
+
+				//}
+				//printf("%zu bodies are detected!\n", num_bodies);
+
+				k4abt_frame_release(body_frame0);
+			}
+			else if (pop_frame_result0 == K4A_WAIT_RESULT_TIMEOUT)
+			{
+				//  It should never hit timeout when K4A_WAIT_INFINITE is set.
+				printf("Error! Pop body frame result timeout!\n");
+				break;
+			}
+			else
+			{
+				printf("Pop body frame result failed!\n");
+				break;
+			}
+
+		}
+		else if (get_capture_result0 == K4A_WAIT_RESULT_TIMEOUT)
+		{
+			// It should never hit time out when K4A_WAIT_INFINITE is set.
+			printf("Record0 finished! Please check the txt files under the path you set!\n");
+			break;
+		}
+		else
+		{
+			printf("Get depth capture0 returned error: %d\n", get_capture_result0);
+			//printf("Get depth capture1 returned error: %d\n", get_capture_result1);
+			break;
+		}
+	}
+
+	k4abt_tracker_shutdown(tracker0);
+	k4abt_tracker_destroy(tracker0);
+	k4a_playback_close(playback0);
+	fclose(fp0);
+	return 0;
+}
 
 
 
@@ -46,7 +212,7 @@ void save(cv::Mat colorFrame, int i, int frame_count)//每次保存时所创建的线程
 
 }
 
-void cap(k4a_device_t& dev_d, cv::Mat& colorFrame, k4a_record_t& record_d, int i, int master_num, int num)  //普通的函数，用来执行线程
+void cap(k4a_device_t& dev_d, cv::Mat& colorFrame, k4a_record_t& record_d, FILE* fp, int i, int master_num, int num)  //普通的函数，用来执行线程
 {
 	//为save建立的变量
 	int flag = -1, flag_r = -1;
@@ -66,6 +232,10 @@ void cap(k4a_device_t& dev_d, cv::Mat& colorFrame, k4a_record_t& record_d, int i
 	uint8_t* colorTextureBuffer;
 
 	k4a_capture_t sensor_capture;//捕获用变量
+	//关节点追踪变量tracker的建立
+	k4abt_tracker_t tracker = NULL;
+	k4abt_tracker_configuration_t tracker_config = K4ABT_TRACKER_CONFIG_DEFAULT;
+	VERIFY(k4abt_tracker_create(&sensor_calibration[i], tracker_config, &tracker), "Body tracker initialization failed!");
 	//查看capture地址
 	//cout << "capture adress" << &sensor_capture << endl;
 
@@ -120,11 +290,100 @@ void cap(k4a_device_t& dev_d, cv::Mat& colorFrame, k4a_record_t& record_d, int i
 			{
 				if (record_d != NULL)
 				{
+					//写视频
 					k4a_record_write_capture(record_d, sensor_capture);
-					cout << "record\n";
+					cout << "have recorded\n";
+					//捕获并写入人体骨架
+					k4a_wait_result_t queue_capture_result = \
+						k4abt_tracker_enqueue_capture(tracker, sensor_capture, K4A_WAIT_INFINITE);//异步提取骨骼信息
+					if (queue_capture_result == K4A_WAIT_RESULT_TIMEOUT)// && queue_capture_result1 == K4A_WAIT_RESULT_TIMEOUT)
+					{
+						// It should never hit timeout when K4A_WAIT_INFINITE is set.
+						printf("Error! Add capture to tracker process queue timeout!\n");
+					}
+					else if (queue_capture_result == K4A_WAIT_RESULT_FAILED)// && queue_capture_result1 == K4A_WAIT_RESULT_FAILED)
+					{
+						printf("Error! Add capture to tracker process queue failed!\n");
+					}
+					else
+					{
+						k4abt_frame_t body_frame = NULL;
+						k4a_wait_result_t pop_frame_result = \
+							k4abt_tracker_pop_result(tracker, &body_frame, K4A_WAIT_INFINITE);
+						if (pop_frame_result == K4A_WAIT_RESULT_SUCCEEDED)
+						{
+							//Get the number of detecied human bodies
+							//size_t num_bodies = k4abt_frame_get_num_bodies(body_frame0);
+							//Get access to every idex of human bodies
+							k4abt_skeleton_t skeleton;
+							k4a_result_t get_body_skeleton = \
+								k4abt_frame_get_body_skeleton(body_frame, 0, &skeleton);
+
+							if (get_body_skeleton == K4A_RESULT_SUCCEEDED)
+							{
+								////***************求角度*******************
+								//float* joints_Angel;
+								//joints_Angel = JointsPositionToAngel(skeleton0);
+								//for (int i = 0; i < 12; i++)
+								//{
+								//	printf("%f", joints_Angel[i]);
+								//	printf("   ");
+								//}
+								//****************************************
+								uint64_t timestamp;
+								timestamp = k4abt_frame_get_device_timestamp_usec(body_frame);
+								fprintf(fp, "%llu,", timestamp);
+								for (int i = 0; i < 32; i++) 
+								{
+									// write the raw cordinates into the txt file
+									tf_source_depth.xyz.x = skeleton0.joints[i].position.xyz.x;
+									tf_source_depth.xyz.y = skeleton0.joints[i].position.xyz.y;
+									tf_source_depth.xyz.z = skeleton0.joints[i].position.xyz.z;
+
+									/* Doing cordinate translation there */
+									k4a_result_t tf_result = k4a_calibration_3d_to_3d(&playback_calibration0, &tf_source_depth, K4A_CALIBRATION_TYPE_DEPTH, K4A_CALIBRATION_TYPE_COLOR, &tf_target_color);
+									// write the transfered cordinates into the txt file
+									if (tf_result == K4A_RESULT_SUCCEEDED)
+									{
+										fprintf(fp0, "%f,%f,%f,", tf_target_color.xyz.x, tf_target_color.xyz.y, tf_target_color.xyz.z);
+									}
+									else {
+										printf("Cordinates transfered failed!\n");
+									}
+
+									//fprintf(fp0, "%f,%f,%f,", skeleton0.joints[i].position.xyz.x, skeleton0.joints[i].position.xyz.y, skeleton0.joints[i].position.xyz.z);
+								
+									fprintf(fp, "\n");
+								}
+							}
+							else if (get_body_skeleton0 == K4A_RESULT_FAILED)
+							{
+								printf("Get body skeleton failed!!\n");
+							}
+							uint32_t id = k4abt_frame_get_body_id(body_frame0, 1);
+							//printf("Body ID is %u\n", id);
+
+							//}
+							//printf("%zu bodies are detected!\n", num_bodies);
+
+							k4abt_frame_release(body_frame0);
+						}
+						else if (pop_frame_result0 == K4A_WAIT_RESULT_TIMEOUT)
+						{
+							//  It should never hit timeout when K4A_WAIT_INFINITE is set.
+							printf("Error! Pop body frame result timeout!\n");
+							break;
+						}
+						else
+						{
+							printf("Pop body frame result failed!\n");
+							break;
+						}
+					}
 				}
 				
 			}
+			//互斥量Flagr1to1，保证拍照数量
 			std::unique_lock<std::mutex> locker_r(Flagr1to1);
 			if (KEY_DOWN('N') && flag_r == -1 || flagr1to1 != 0)
 			{
@@ -149,6 +408,8 @@ void cap(k4a_device_t& dev_d, cv::Mat& colorFrame, k4a_record_t& record_d, int i
 				k4a_record_close(record_d);//关闭录像句柄
 				VERIFY(k4a_record_create(name, dev[i], config[i], &record_d), "create record failed!");
 				VERIFY(k4a_record_write_header(record_d), "write record header failed!");
+				fclose(fp);
+				fp = fopen(name, "w");
 			}
 			else
 				locker_r.unlock();
@@ -239,10 +500,10 @@ uint32_t init_start(int* master_num)
 	}
 
 	record = new k4a_record_t[devicecount]{ NULL };//初始化为NULL
+	fp = new FILE[devicecount]{ NULL };
 	dev = new k4a_device_t[devicecount];
 	config = new k4a_device_configuration_t[devicecount];
-
-	char str[5];
+	sensor_calibration = new k4a_calibration_t[devicecount];
 
 	for (uint8_t deviceindex = 0; deviceindex < devicecount; deviceindex++)
 	{
@@ -298,8 +559,7 @@ uint32_t init_start(int* master_num)
 		cout << "started opening k4a device..." << endl;
 		VERIFY(k4a_device_start_cameras(dev[deviceindex], &config[deviceindex]), "Start K4A cameras failed!");//启动
 		//校准设备
-		k4a_calibration_t sensor_calibration;
-		VERIFY(k4a_device_get_calibration(dev[deviceindex], config[deviceindex].depth_mode, config[deviceindex].color_resolution, &sensor_calibration),
+		VERIFY(k4a_device_get_calibration(dev[deviceindex], config[deviceindex].depth_mode, config[deviceindex].color_resolution, &sensor_calibration[deviceindex]),
 			"Get depth camera calibration failed!")
 		VERIFY(k4a_device_set_color_control(dev[deviceindex], K4A_COLOR_CONTROL_BRIGHTNESS, K4A_COLOR_CONTROL_MODE_MANUAL, 150),"color brightness control failed");//手动设置曝光
 		cout << "finished opening k4a device!\n" << endl;
@@ -307,6 +567,7 @@ uint32_t init_start(int* master_num)
 	return devicecount;
 
 }
+
 
 
 
@@ -346,7 +607,7 @@ int main()
 	//tid_ss = thread(keyboards);
 	for (int i = 0; i < num; ++i)
 	{
-		tids[i] = thread(cap, ref(dev[i]), ref(colorframe[i]), ref(record[i]), i, master_num, num);
+		tids[i] = thread(cap, ref(dev[i]), ref(colorframe[i]), ref(record[i]), fp[i], i, master_num, num);
 		
 	}
 	for (int i = 0; i < num; ++i)
