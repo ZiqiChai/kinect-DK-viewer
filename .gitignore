@@ -338,3 +338,11 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/cublas64_100.dll
+/k4abt.dll
+/k4a.dll
+/dnn_model_2_0.onnx
+/depthengine_2_0.dll
+/cudnn64_7.dll
+/cudart64_100.dll
+/onnxruntime.dll
