@@ -331,7 +331,10 @@ void cap(k4a_device_t& dev_d, cv::Mat& colorFrame, k4a_record_t& record_d, int i
 			k4a_device_stop_cameras(dev_d);//停止流
 			k4abt_tracker_shutdown(tracker);//关闭捕捉
 			k4abt_tracker_destroy(tracker);
-			fclose(fp);//关闭关节点文件
+			if (fp != NULL)
+			{
+				fclose(fp);//关闭关节点文件
+			}
 			k4a_device_close(dev_d);
 			break;
 		}
