@@ -35,7 +35,6 @@ thread* tids;
 thread* tids_s;
 k4a_device_t* dev;
 k4a_record_t* record = NULL;
-FILE** fp = NULL;
 k4a_calibration_t* sensor_calibration;
 k4a_device_configuration_t* config;
 mutex Flag1to1, Flagr1to1;
